@@ -3,13 +3,12 @@ import LogoProEstoque from '@/src/components/LogoProEstoque';
 import { Button } from '@/src/components/ui/button';
 import { Text } from '@/src/components/ui/text';
 import { router } from 'expo-router';
-import { ArrowLeft, Mail, MailCheck } from 'lucide-react-native';
+import { Mail, MailCheck } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  Pressable,
   SafeAreaView,
   ScrollView,
-  View,
+  View
 } from 'react-native';
 
 // ─── Constantes de estilo compartilhadas ─────────────────────────────────────
@@ -54,83 +53,72 @@ export default function RecuperarSenhaScreen() {
         showsVerticalScrollIndicator={false}
         automaticallyAdjustKeyboardInsets
       >
-          <View className="flex-1 px-6 py-6 gap-8">
+        <View className="flex-1 px-6 py-6 gap-8 justify-center">
+          {/* Topo: Logo + Título + Subtítulo */}
+          <View className="items-center gap-4 pt-4">
+            <LogoProEstoque size="md" />
 
-            {/* Botão voltar */}
-            <Pressable
-              onPress={() => router.back()}
-              className="flex-row items-center gap-1.5 self-start active:opacity-60"
-              hitSlop={12}
-            >
-              <ArrowLeft size={18} color="#a1a1aa" strokeWidth={2} />
-              <Text className="text-sm font-medium text-zinc-400">Voltar</Text>
-            </Pressable>
-
-            {/* Topo: Logo + Título + Subtítulo */}
-            <View className="items-center gap-4 pt-4">
-              <LogoProEstoque size="md" />
-
-              <View className="items-center gap-2">
-                <Text
-                  variant="h1"
-                  className="text-white text-3xl font-extrabold"
-                >
-                  Recuperar senha
-                </Text>
-                <Text className="text-sm text-zinc-400 text-center">
-                  Informe seu e-mail e enviaremos um link
-                </Text>
-              </View>
+            <View className="items-center gap-2">
+              <Text
+                variant="h1"
+                className="text-white text-3xl font-extrabold"
+              >
+                Recuperar senha
+              </Text>
+              <Text className="text-sm text-zinc-400 text-center">
+                Informe seu e-mail e enviaremos um link
+              </Text>
             </View>
+          </View>
 
-            {/* Conteúdo: formulário ou card de sucesso */}
-            {submitted ? (
-              <SuccessCard />
-            ) : (
-              <LoginInput
-                label="E-mail"
-                icon={Mail}
-                placeholder="joao@email.com"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                returnKeyType="send"
-                onSubmitEditing={handleSend}
-                containerClassName={INPUT_CONTAINER}
-                labelClassName={INPUT_LABEL}
-                className={INPUT_TEXT}
-              />
-            )}
+          {/* Conteúdo: formulário ou card de sucesso */}
+          {submitted ? (
+            <SuccessCard />
+          ) : (
+            <LoginInput
+              label="E-mail"
+              icon={Mail}
+              placeholder="joao@email.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              returnKeyType="send"
+              onSubmitEditing={handleSend}
+              containerClassName={INPUT_CONTAINER}
+              labelClassName={INPUT_LABEL}
+              className={INPUT_TEXT}
+            />
+          )}
 
-            {/* Botões de ação */}
-            <View className="gap-4">
-              {!submitted && (
-                <Button
-                  variant="brand"
-                  onPress={handleSend}
-                  disabled={loading || !email.trim()}
-                  className="h-14 w-full rounded-full"
-                >
-                  <Text className="text-base font-bold text-brand-foreground">
-                    {loading ? 'Enviando…' : 'Enviar link'}
-                  </Text>
-                </Button>
-              )}
-
+          {/* Botões de ação */}
+          <View className="gap-4">
+            {!submitted && (
               <Button
-                variant="outlineWhite"
-                onPress={() => router.back()}
+                variant="brand"
+                onPress={handleSend}
+                disabled={loading || !email.trim()}
                 className="h-14 w-full rounded-full"
               >
-                <Text className="text-base font-bold text-white">
-                  Voltar ao Login
+                <Text className="text-base font-bold text-brand-foreground">
+                  {loading ? 'Enviando…' : 'Enviar link'}
                 </Text>
               </Button>
-            </View>
+            )}
 
+            <Button
+              variant="outlineWhite"
+              onPress={() => router.back()}
+              className="h-14 w-full rounded-full"
+            >
+              <Text className="text-base font-bold text-white">
+                Voltar ao Login
+              </Text>
+            </Button>
           </View>
-        </ScrollView>
+
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -19,8 +19,20 @@ export default function LoginScreen() {
 
   function handleLogin() {
     setLoading(true);
-    // TODO: implementar autenticação
-    setTimeout(() => setLoading(false), 1500);
+
+    // TODO: Substituir o setTimeout pela chamada real à API de autenticação:
+    // try {
+    //   await authService.login({ email, password });
+    //   router.replace('/(tabs)');
+    // } catch (error) {
+    //   setError('E-mail ou senha inválidos');
+    // } finally {
+    //   setLoading(false);
+    // }
+    setTimeout(() => {
+      setLoading(false);
+      router.replace('/(tabs)');
+    }, 1000);
   }
 
   return (
