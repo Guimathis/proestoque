@@ -46,6 +46,10 @@ const buttonVariants = cva(
           'border border-zinc-600 bg-transparent active:bg-zinc-800/50',
           Platform.select({ web: 'hover:bg-zinc-800/50' })
         ),
+        outlineWhite: cn(
+          'border border-white bg-transparent active:bg-white/10',
+          Platform.select({ web: 'hover:bg-white/10' })
+        ),
       },
       size: {
         default: cn('h-10 px-4 py-2 sm:h-9', Platform.select({ web: 'has-[>svg]:px-3' })),
@@ -83,6 +87,7 @@ const buttonTextVariants = cva(
         ),
         brand: 'text-brand-foreground font-bold',
         outlineDark: 'text-white font-bold',
+        outlineWhite: 'text-white font-bold',
       },
       size: {
         default: '',
