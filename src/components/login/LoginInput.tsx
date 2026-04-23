@@ -8,6 +8,7 @@ type LoginInputProps = React.ComponentProps<typeof TextInput> & {
   label: string;
   icon: LucideIcon;
   isPassword?: boolean;
+  error?: string;
   containerClassName?: string;
   labelClassName?: string;
 };
@@ -16,6 +17,7 @@ export function LoginInput({
   label,
   icon: Icon,
   isPassword = false,
+  error,
   className,
   containerClassName,
   labelClassName,
@@ -31,6 +33,7 @@ export function LoginInput({
       <View
         className={cn(
           'flex-row items-center rounded-xl border border-border bg-background px-3 h-14 shadow-sm',
+          !!error && 'border-red-500',
           containerClassName
         )}
       >
@@ -53,6 +56,9 @@ export function LoginInput({
           </Pressable>
         )}
       </View>
+      {!!error && (
+        <Text className="text-xs font-medium text-red-500 mt-0.5">{error}</Text>
+      )}
     </View>
   );
 }
