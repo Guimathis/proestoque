@@ -1,4 +1,4 @@
-import { PackageOpen } from "lucide-react-native";
+import { Package } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
 
@@ -19,7 +19,7 @@ export default function LogoProEstoque({ size = "md" }: LogoProEstoqueProps) {
         <View
             className={`${currentSize.container} items-center justify-center rounded-full bg-brand`}
         >
-            <PackageOpen
+            <Package
                 size={currentSize.icon}
                 color="#000000"
                 strokeWidth={2.5}
