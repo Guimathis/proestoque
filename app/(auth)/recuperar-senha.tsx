@@ -6,10 +6,11 @@ import { router } from 'expo-router';
 import { Mail, MailCheck } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
+  ActivityIndicator,
   ScrollView,
   View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // ─── Constantes de estilo compartilhadas ─────────────────────────────────────
 const INPUT_CONTAINER = 'border-zinc-700 bg-zinc-900';
@@ -101,7 +102,7 @@ export default function RecuperarSenhaScreen() {
                 className="h-14 w-full rounded-full"
               >
                 <Text className="text-base font-bold text-brand-foreground">
-                  {loading ? 'Enviando…' : 'Enviar link'}
+                  {loading ? <ActivityIndicator color="#fff" /> : 'Enviar link'}
                 </Text>
               </Button>
             )}

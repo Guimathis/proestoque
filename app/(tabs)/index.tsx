@@ -54,38 +54,46 @@ const ACTIVITY_CONFIG: Record<
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, badge, badgeColor = 'brand', accent }: StatCardProps) {
   return (
-    <View
-      className={
-        accent
-          ? 'flex-1 rounded-2xl bg-brand p-4 gap-3'
-          : 'flex-1 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 gap-3'
-      }
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      automaticallyAdjustKeyboardInsets
     >
-      <View className="flex-row items-center justify-between">
-        <View
-          className={
-            accent
-              ? 'h-10 w-10 items-center justify-center rounded-xl bg-black/20'
-              : 'h-10 w-10 items-center justify-center rounded-xl bg-zinc-800'
-          }
-        >
-          {icon}
+      <View
+        className={
+          accent
+            ? 'flex-1 rounded-2xl bg-brand p-4 gap-3'
+            : 'flex-1 rounded-2xl bg-zinc-900 border border-zinc-800 p-4 gap-3'
+        }
+      >
+        <View className="flex-row items-center justify-between">
+          <View
+            className={
+              accent
+                ? 'h-10 w-10 items-center justify-center rounded-xl bg-black/20'
+                : 'h-10 w-10 items-center justify-center rounded-xl bg-zinc-800'
+            }
+          >
+            {icon}
+          </View>
+          {badge && (
+            <Text className={`text-xs font-semibold ${accent ? 'text-black/70' : BADGE_COLOR[badgeColor]}`}>
+              {badge}
+            </Text>
+          )}
         </View>
-        {badge && (
-          <Text className={`text-xs font-semibold ${accent ? 'text-black/70' : BADGE_COLOR[badgeColor]}`}>
-            {badge}
+        <View className="gap-0.5">
+          <Text className={`text-2xl font-bold ${accent ? 'text-black' : 'text-white'}`}>
+            {value}
           </Text>
-        )}
+          <Text className={`text-xs ${accent ? 'text-black/70' : 'text-zinc-400'}`}>
+            {label}
+          </Text>
+        </View>
       </View>
-      <View className="gap-0.5">
-        <Text className={`text-2xl font-bold ${accent ? 'text-black' : 'text-white'}`}>
-          {value}
-        </Text>
-        <Text className={`text-xs ${accent ? 'text-black/70' : 'text-zinc-400'}`}>
-          {label}
-        </Text>
-      </View>
-    </View>
+    </ScrollView>
+
   );
 }
 
@@ -171,6 +179,54 @@ export default function HomeScreen() {
           <View className="gap-3">
             <SectionTitle>Atividade recente</SectionTitle>
             <View className="bg-zinc-900 rounded-2xl px-4 border border-zinc-800">
+              <ActivityItem
+                title="Entrada: Caixas de papelão"
+                subtitle="50 unidades · Armazém A"
+                time="14:32"
+                type="in"
+              />
+              <ActivityItem
+                title="Saída: Fitas adesivas"
+                subtitle="12 unidades · Pedido #4821"
+                time="13:10"
+                type="out"
+              />
+              <ActivityItem
+                title="Alerta: Papel A4 em baixa"
+                subtitle="Apenas 8 unidades restantes"
+                time="11:45"
+                type="alert"
+              />
+              <ActivityItem
+                title="Entrada: Etiquetas adesivas"
+                subtitle="200 unidades · Armazém B"
+                time="09:20"
+                type="in"
+              />
+              <ActivityItem
+                title="Entrada: Caixas de papelão"
+                subtitle="50 unidades · Armazém A"
+                time="14:32"
+                type="in"
+              />
+              <ActivityItem
+                title="Saída: Fitas adesivas"
+                subtitle="12 unidades · Pedido #4821"
+                time="13:10"
+                type="out"
+              />
+              <ActivityItem
+                title="Alerta: Papel A4 em baixa"
+                subtitle="Apenas 8 unidades restantes"
+                time="11:45"
+                type="alert"
+              />
+              <ActivityItem
+                title="Entrada: Etiquetas adesivas"
+                subtitle="200 unidades · Armazém B"
+                time="09:20"
+                type="in"
+              />
               <ActivityItem
                 title="Entrada: Caixas de papelão"
                 subtitle="50 unidades · Armazém A"
