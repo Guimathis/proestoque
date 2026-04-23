@@ -38,6 +38,14 @@ const buttonVariants = cva(
           Platform.select({ web: 'hover:bg-accent dark:hover:bg-accent/50' })
         ),
         link: '',
+        brand: cn(
+          'bg-brand active:bg-brand/90 shadow-sm',
+          Platform.select({ web: 'hover:bg-brand/90' })
+        ),
+        outlineDark: cn(
+          'border border-zinc-600 bg-transparent active:bg-zinc-800/50',
+          Platform.select({ web: 'hover:bg-zinc-800/50' })
+        ),
       },
       size: {
         default: cn('h-10 px-4 py-2 sm:h-9', Platform.select({ web: 'has-[>svg]:px-3' })),
@@ -73,6 +81,8 @@ const buttonTextVariants = cva(
           'text-primary group-active:underline',
           Platform.select({ web: 'underline-offset-4 hover:underline group-hover:underline' })
         ),
+        brand: 'text-brand-foreground font-bold',
+        outlineDark: 'text-white font-bold',
       },
       size: {
         default: '',
