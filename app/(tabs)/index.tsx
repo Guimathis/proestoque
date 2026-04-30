@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { FlatList, RefreshControl, StatusBar, TouchableOpacity, View } from 'react-native';
 
 import LogoProEstoque from '@/src/components/LogoProEstoque';
+import { THEME } from '@/src/constants/theme';
 import {
   CATEGORIAS_MOCK,
   formatarPreco,
@@ -18,7 +19,6 @@ import {
   Produto,
   PRODUTOS_MOCK
 } from '@/src/data/mockData';
-import { THEME } from '@/src/constants/theme';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -46,8 +46,8 @@ export default function HomeScreen() {
   ];
 
   const ListHeader = () => (
-    <View className="px-6 pb-2">
-      <View className="flex-row items-center gap-2 mt-4">
+    <View className="px-6 pt-2">
+      <View className="flex-row items-center gap-2">
         <LogoProEstoque size="sm" />
         <Text className="text-2xl font-bold text-white">ProEstoque</Text>
       </View>
@@ -115,7 +115,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" edges={['top']}>
       <StatusBar barStyle="light-content" />
       <FlatList
         data={PRODUTOS_MOCK.slice(0, 5)}
