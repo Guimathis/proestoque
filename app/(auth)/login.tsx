@@ -12,28 +12,15 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, isLoading } = useAuth();
 
   function handleLogin() {
-    setLoading(true);
-
-    // TODO: Substituir o setTimeout pela chamada real à API de autenticação:
-    // try {
-    //   await authService.login({ email, password });
-    //   router.replace('/(tabs)');
-    // } catch (error) {
-    //   setError('E-mail ou senha inválidos');
-    // } finally {
-    //   setLoading(false);
-    // }
-    setTimeout(() => {
-      setLoading(false);
-      router.replace('/(tabs)');
-    }, 1000);
+    login();
   }
 
   return (
@@ -109,11 +96,11 @@ export default function LoginScreen() {
             <Button
               variant="brand"
               onPress={handleLogin}
-              disabled={loading}
+              disabled={isLoading}
               className="h-14 w-full rounded-full"
             >
               <Text className="text-base font-bold text-brand-foreground">
-                {loading ? <ActivityIndicator color="#fff" /> : 'Entrar'}
+                {isLoading ? <ActivityIndicator color="#fff" /> : 'Entrar'}
               </Text>
             </Button>
 

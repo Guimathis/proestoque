@@ -21,6 +21,14 @@ import {
 } from '@/src/data/mockData';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/src/contexts/AuthContext';
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
 
 function getStatusBadge(p: Produto) {
   if (p.quantidade === 0) return { label: 'Sem estoque', color: 'bg-red-500/20', textColor: 'text-red-500' };
@@ -29,6 +37,7 @@ function getStatusBadge(p: Produto) {
 }
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = React.useCallback(() => {
@@ -54,11 +63,11 @@ export default function HomeScreen() {
 
       <View className="flex-row justify-between items-center pt-6 pb-6">
         <View>
-          <Text className="text-2xl font-bold text-white">Olá, João 👋</Text>
+          <Text className="text-2xl font-bold text-white">{getGreeting()}, {user?.nome?.split(' ')[0] ?? 'Visitante'} 👋</Text>
           <Text className="text-sm text-zinc-400 mt-1">Visão geral do estoque</Text>
         </View>
         <TouchableOpacity className="h-12 w-12 bg-brand rounded-full items-center justify-center">
-          <Plus size={24} color={THEME.dark.brandForeground} />
+          <Text className="text-white font-bold text-lg">{user?.nome?.charAt(0)?.toUpperCase() ?? 'U'}</Text>
         </TouchableOpacity>
       </View>
 
