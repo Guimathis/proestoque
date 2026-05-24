@@ -18,6 +18,7 @@ export type Produto = {
     preco: number;
     unidade: string;          // "un", "kg", "cx", "L"
     ultimaMovimentacao: string; // ISO date string
+    foto?: string;            // Bonus challenge: product image
 };
 
 export type Movimentacao = {
@@ -157,12 +158,12 @@ export const MOVIMENTACOES_MOCK: Movimentacao[] = [
 // ================================================================
 
 // Retorna todos os produtos com estoque abaixo do mínimo
-export const getProdutosComEstoqueBaixo = () =>
-    PRODUTOS_MOCK.filter((p) => p.quantidade < p.quantidadeMinima);
+export const getProdutosComEstoqueBaixo = (produtos: Produto[] = PRODUTOS_MOCK) =>
+    produtos.filter((p) => p.quantidade < p.quantidadeMinima);
 
 // Retorna o valor total do estoque (quantidade × preço)
-export const getValorTotalEstoque = () =>
-    PRODUTOS_MOCK.reduce((acc, p) => acc + p.quantidade * p.preco, 0);
+export const getValorTotalEstoque = (produtos: Produto[] = PRODUTOS_MOCK) =>
+    produtos.reduce((acc, p) => acc + p.quantidade * p.preco, 0);
 
 // Formata preço em BRL
 export const formatarPreco = (valor: number) =>

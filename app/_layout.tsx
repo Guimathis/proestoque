@@ -8,6 +8,7 @@ import '../global.css';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { NAV_THEME } from '@/src/constants/theme';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
+import { ProductsProvider } from '@/src/contexts/ProductsContext';
 import SplashScreen from '@/src/components/SplashScreen';
 import { useEffect } from 'react';
 
@@ -50,11 +51,13 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
-        <NavigationGuard />
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <PortalHost />
-      </ThemeProvider>
+      <ProductsProvider>
+        <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
+          <NavigationGuard />
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <PortalHost />
+        </ThemeProvider>
+      </ProductsProvider>
     </AuthProvider>
   );
 }
