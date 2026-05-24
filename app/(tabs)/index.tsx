@@ -22,6 +22,7 @@ import {
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useProducts } from '@/src/contexts/ProductsContext';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -38,6 +39,7 @@ function getStatusBadge(p: Produto) {
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { produtos } = useProducts();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = React.useCallback(() => {
@@ -45,13 +47,14 @@ export default function HomeScreen() {
     setTimeout(() => setRefreshing(false), 2000);
   }, []);
 
-  const produtosComEstoqueBaixo = getProdutosComEstoqueBaixo();
+  const produtosComEstoqueBaixo = getProdutosComEstoqueBaixo(produtos);
+  const valorTotal = getValorTotalEstoque(produtos);
 
   const cards = [
-    { id: 'total', label: 'Produtos', value: PRODUTOS_MOCK.length.toString(), icon: <Package size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
+    { id: 'total', label: 'Produtos', value: produtos.length.toString(), icon: <Package size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
     { id: 'alertas', label: 'Alertas', value: produtosComEstoqueBaixo.length.toString(), icon: <AlertTriangle size={20} color={THEME.dark.destructive} />, bg: 'bg-red-950/40', border: 'border-red-900/50' },
     { id: 'categorias', label: 'Categorias', value: CATEGORIAS_MOCK.length.toString(), icon: <Folder size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
-    { id: 'valor', label: 'Em Estoque', value: formatarPreco(getValorTotalEstoque()), icon: <CircleDollarSign size={20} color={THEME.dark.brand} />, bg: 'bg-brand/10', border: 'border-brand/20' },
+    { id: 'valor', label: 'Em Estoque', value: formatarPreco(valorTotal), icon: <CircleDollarSign size={20} color={THEME.dark.brand} />, bg: 'bg-brand/10', border: 'border-brand/20' },
   ];
 
   const ListHeader = () => (
@@ -127,7 +130,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1" edges={['top']}>
       <StatusBar barStyle="light-content" />
       <FlatList
-        data={PRODUTOS_MOCK.slice(0, 5)}
+        data={produtos.slice(0, 5)}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         ListHeaderComponent={ListHeader}
