@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Pressable,
-  View
+  View,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -40,11 +41,14 @@ export default function CadastroScreen() {
 
   async function handleRegister() {
     if (!validatePasswords()) return;
+    setLoading(true);
     try {
       await registrar(name, email, password);
     } catch (error: any) {
       const mensagem = error.response?.data?.erro || 'Erro ao registrar. Tente novamente.';
-      alert(mensagem);
+      Alert.alert('Erro', mensagem);
+    } finally {
+      setLoading(false);
     }
   }
 

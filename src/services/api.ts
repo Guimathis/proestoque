@@ -2,8 +2,10 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+import Constants from 'expo-constants';
+
 // Use o IP da sua máquina local na rede para que o Expo Go no celular consiga acessar a API
-const baseURL = 'http://localhost:3333/api';
+const baseURL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3333/api';
 
 export const api = axios.create({
   baseURL,

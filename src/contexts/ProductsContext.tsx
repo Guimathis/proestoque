@@ -1,11 +1,27 @@
-import React, { createContext, useContext, useEffect, useReducer } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Produto, PRODUTOS_MOCK } from '@/src/data/mockData';
+import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
+import { api } from '../services/api';
 
-const STORAGE_KEY = '@proestoque_produtos';
+export type Produto = {
+  id: string;
+  nome: string;
+  preco: number;
+  quantidade: number;
+  quantidadeMinima: number;
+  unidade: string;
+  categoriaId: string;
+  ultimaMovimentacao: string;
+  observacao?: string;
+  foto?: string;
+  categoria?: {
+    id: string;
+    nome: string;
+  };
+};
 
 type Action =
-  | { type: 'LOAD'; payload: Produto[] }
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; payload: Produto[] }
+  | { type: 'LOAD_ERROR'; payload: string }
   | { type: 'ADD'; payload: Produto }
   | { type: 'UPDATE'; payload: Produto }
   | { type: 'DELETE'; payload: string };
@@ -13,17 +29,23 @@ type Action =
 type State = {
   produtos: Produto[];
   isLoading: boolean;
+  error: string | null;
 };
 
 const initialState: State = {
   produtos: [],
   isLoading: true,
+  error: null,
 };
 
 function productsReducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'LOAD':
-      return { ...state, produtos: action.payload, isLoading: false };
+    case 'LOAD_START':
+      return { ...state, isLoading: true, error: null };
+    case 'LOAD_SUCCESS':
+      return { ...state, produtos: action.payload, isLoading: false, error: null };
+    case 'LOAD_ERROR':
+      return { ...state, isLoading: false, error: action.payload };
     case 'ADD':
       return { ...state, produtos: [action.payload, ...state.produtos] };
     case 'UPDATE':
@@ -46,8 +68,10 @@ function productsReducer(state: State, action: Action): State {
 type ProductsContextType = {
   produtos: Produto[];
   isLoading: boolean;
-  adicionarProduto: (produto: Omit<Produto, 'id' | 'ultimaMovimentacao'>) => Promise<void>;
-  editarProduto: (produto: Produto) => Promise<void>;
+  error: string | null;
+  carregarProdutos: () => Promise<void>;
+  adicionarProduto: (produto: Omit<Produto, 'id' | 'ultimaMovimentacao' | 'categoria'>) => Promise<void>;
+  editarProduto: (produto: Omit<Produto, 'categoria'>) => Promise<void>;
   excluirProduto: (id: string) => Promise<void>;
 };
 
@@ -56,60 +80,56 @@ const ProductsContext = createContext<ProductsContextType | undefined>(undefined
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(productsReducer, initialState);
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          dispatch({ type: 'LOAD', payload: JSON.parse(stored) });
-        } else {
-          // Initialize with mock data if empty for the first time
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(PRODUTOS_MOCK));
-          dispatch({ type: 'LOAD', payload: PRODUTOS_MOCK });
-        }
-      } catch (error) {
-        console.error('Failed to load products', error);
-        dispatch({ type: 'LOAD', payload: [] });
-      }
+  const carregarProdutos = useCallback(async () => {
+    dispatch({ type: 'LOAD_START' });
+    try {
+      const response = await api.get('/produtos');
+      dispatch({ type: 'LOAD_SUCCESS', payload: response.data });
+    } catch (error: any) {
+      console.error('Failed to load products', error);
+      dispatch({ type: 'LOAD_ERROR', payload: error.message || 'Erro ao carregar produtos' });
     }
-    loadProducts();
   }, []);
 
-  const saveProducts = async (newProducts: Produto[]) => {
+  useEffect(() => {
+    carregarProdutos();
+  }, [carregarProdutos]);
+
+  const adicionarProduto = async (produtoData: Omit<Produto, 'id' | 'ultimaMovimentacao' | 'categoria'>) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProducts));
+      const response = await api.post('/produtos', produtoData);
+      dispatch({ type: 'ADD', payload: response.data });
     } catch (error) {
-      console.error('Failed to save products', error);
+      console.error('Failed to add product', error);
+      throw error;
     }
   };
 
-  const adicionarProduto = async (produtoData: Omit<Produto, 'id' | 'ultimaMovimentacao'>) => {
-    const novoProduto: Produto = {
-      ...produtoData,
-      id: `prod_${Date.now()}`,
-      ultimaMovimentacao: new Date().toISOString(),
-    };
-    dispatch({ type: 'ADD', payload: novoProduto });
-    await saveProducts([novoProduto, ...state.produtos]);
-  };
-
-  const editarProduto = async (produto: Produto) => {
-    dispatch({ type: 'UPDATE', payload: produto });
-    const newProducts = state.produtos.map((p) => (p.id === produto.id ? produto : p));
-    await saveProducts(newProducts);
+  const editarProduto = async (produto: Omit<Produto, 'categoria'>) => {
+    try {
+      const response = await api.put(`/produtos/${produto.id}`, produto);
+      dispatch({ type: 'UPDATE', payload: response.data });
+    } catch (error) {
+      console.error('Failed to update product', error);
+      throw error;
+    }
   };
 
   const excluirProduto = async (id: string) => {
-    dispatch({ type: 'DELETE', payload: id });
-    const newProducts = state.produtos.filter((p) => p.id !== id);
-    await saveProducts(newProducts);
+    try {
+      await api.delete(`/produtos/${id}`);
+      dispatch({ type: 'DELETE', payload: id });
+    } catch (error) {
+      console.error('Failed to delete product', error);
+      throw error;
+    }
   };
 
   return (
     <ProductsContext.Provider
       value={{
-        produtos: state.produtos,
-        isLoading: state.isLoading,
+        ...state,
+        carregarProdutos,
         adicionarProduto,
         editarProduto,
         excluirProduto,
