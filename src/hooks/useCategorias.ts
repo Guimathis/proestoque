@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 export type Categoria = {
   id: string;
@@ -26,9 +27,13 @@ export function useCategorias() {
     }
   }, []);
 
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
-    fetchCategorias();
-  }, [fetchCategorias]);
+    if (isAuthenticated) {
+      fetchCategorias();
+    }
+  }, [fetchCategorias, isAuthenticated]);
 
   return { categorias, isLoading, error, refetch: fetchCategorias };
 }

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
 import { api } from '../services/api';
 import { sendLowStockNotification } from '../services/notifications';
+import { useAuth } from './AuthContext';
 
 export type Produto = {
   id: string;
@@ -79,6 +80,7 @@ type ProductsContextType = {
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
   const [state, dispatch] = useReducer(productsReducer, initialState);
 
   const carregarProdutos = useCallback(async () => {
@@ -103,8 +105,10 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    carregarProdutos();
-  }, [carregarProdutos]);
+    if (isAuthenticated) {
+      carregarProdutos();
+    }
+  }, [carregarProdutos, isAuthenticated]);
 
   const adicionarProduto = async (produtoData: Omit<Produto, 'id' | 'ultimaMovimentacao' | 'categoria'>) => {
     try {

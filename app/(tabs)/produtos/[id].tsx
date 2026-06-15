@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { useProducts } from '@/src/contexts/ProductsContext';
-import { THEME } from '@/src/constants/theme';
+
 import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { produtoSchema, ProdutoFormData } from '@/src/schemas/produtoSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,6 +56,20 @@ export default function EditarProdutoScreen() {
   };
 
   const handleExcluir = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm("Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.");
+      if (confirmed && id) {
+        excluirProduto(id as string)
+          .then(() => {
+            router.back();
+          })
+          .catch((error: any) => {
+            window.alert(error.message || 'Erro ao excluir produto');
+          });
+      }
+      return;
+    }
+
     Alert.alert(
       "Excluir Produto",
       "Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.",
@@ -67,7 +81,7 @@ export default function EditarProdutoScreen() {
           onPress: async () => {
             if (id) {
               try {
-                await excluirProduto(id);
+                await excluirProduto(id as string);
                 router.back();
               } catch (error: any) {
                 Alert.alert('Erro', error.message || 'Erro ao excluir produto');

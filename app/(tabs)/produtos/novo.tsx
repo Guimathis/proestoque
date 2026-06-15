@@ -1,14 +1,14 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { useProducts } from '@/src/contexts/ProductsContext';
-import { THEME } from '@/src/constants/theme';
+
 import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { produtoSchema, ProdutoFormData } from '@/src/schemas/produtoSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCategorias } from '@/src/hooks/useCategorias';
-import { Alert } from 'react-native';
+
 export default function NovoProdutoScreen() {
   const router = useRouter();
   const { adicionarProduto } = useProducts();
@@ -34,7 +34,7 @@ export default function NovoProdutoScreen() {
 
   const onSubmit = async (data: ProdutoFormData) => {
     try {
-      await adicionarProduto(data);
+      await adicionarProduto({ ...data, foto: data.foto ?? undefined });
       router.back();
     } catch (error: any) {
       Alert.alert('Erro', error.message || 'Erro ao adicionar produto');

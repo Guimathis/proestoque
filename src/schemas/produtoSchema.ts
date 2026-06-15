@@ -8,7 +8,7 @@ export const produtoSchema = z.object({
   preco: z.coerce.number({ message: 'Deve ser um número' }).min(0, 'O preço deve ser maior ou igual a zero'),
   unidade: z.string().min(1, 'A unidade é obrigatória'),
   observacao: z.string().optional(),
-  foto: z.string().optional(),
+  foto: z.string().optional().nullable(),
 });
 
 export type ProdutoFormData = z.infer<typeof produtoSchema>;
