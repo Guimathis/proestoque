@@ -4,25 +4,21 @@ import {
   CircleDollarSign,
   Folder,
   Package,
-  Plus,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { FlatList, RefreshControl, StatusBar, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 
 import LogoProEstoque from '@/src/components/LogoProEstoque';
 import { THEME } from '@/src/constants/theme';
-import {
-  CATEGORIAS_MOCK,
-  formatarPreco,
-  getProdutosComEstoqueBaixo,
-  getValorTotalEstoque,
-  Produto,
-  PRODUTOS_MOCK
-} from '@/src/data/mockData';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/contexts/AuthContext';
-import { useProducts } from '@/src/contexts/ProductsContext';
+import { useProducts, Produto } from '@/src/contexts/ProductsContext';
+import { useCategorias } from '@/src/hooks/useCategorias';
+import { LoadingView } from '@/src/components/LoadingView';
+import { ErrorView } from '@/src/components/ErrorView';
+import { formatarPreco, getProdutosComEstoqueBaixo, getValorTotalEstoque } from '@/src/utils/formatters';
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -33,19 +29,31 @@ function getGreeting() {
 
 function getStatusBadge(p: Produto) {
   if (p.quantidade === 0) return { label: 'Sem estoque', color: 'bg-red-500/20', textColor: 'text-red-500' };
-  if (p.quantidade < p.quantidadeMinima) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
+  const qtMin = (p as any).quantidadeMinima || 10;
+  if (p.quantidade < qtMin) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
   return { label: 'Normal', color: 'bg-brand/20', textColor: 'text-brand' };
 }
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { produtos } = useProducts();
+  const { produtos, isLoading: isLoadingProdutos, error: errorProdutos, carregarProdutos } = useProducts();
+  const { categorias, isLoading: isLoadingCategorias, error: errorCategorias, refetch: carregarCategorias } = useCategorias();
+  
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 2000);
-  }, []);
+    await Promise.all([carregarProdutos(), carregarCategorias()]);
+    setRefreshing(false);
+  }, [carregarProdutos, carregarCategorias]);
+
+  if (errorProdutos || errorCategorias) {
+    return <ErrorView message={errorProdutos || errorCategorias || 'Erro de rede.'} onRetry={onRefresh} />;
+  }
+
+  if ((isLoadingProdutos || isLoadingCategorias) && produtos.length === 0 && categorias.length === 0) {
+    return <LoadingView />;
+  }
 
   const produtosComEstoqueBaixo = getProdutosComEstoqueBaixo(produtos);
   const valorTotal = getValorTotalEstoque(produtos);
@@ -53,7 +61,7 @@ export default function HomeScreen() {
   const cards = [
     { id: 'total', label: 'Produtos', value: produtos.length.toString(), icon: <Package size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
     { id: 'alertas', label: 'Alertas', value: produtosComEstoqueBaixo.length.toString(), icon: <AlertTriangle size={20} color={THEME.dark.destructive} />, bg: 'bg-red-950/40', border: 'border-red-900/50' },
-    { id: 'categorias', label: 'Categorias', value: CATEGORIAS_MOCK.length.toString(), icon: <Folder size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
+    { id: 'categorias', label: 'Categorias', value: categorias.length.toString(), icon: <Folder size={20} color={THEME.dark.mutedForeground} />, bg: 'bg-zinc-900', border: 'border-zinc-800' },
     { id: 'valor', label: 'Em Estoque', value: formatarPreco(valorTotal), icon: <CircleDollarSign size={20} color={THEME.dark.brand} />, bg: 'bg-brand/10', border: 'border-brand/20' },
   ];
 
@@ -95,7 +103,7 @@ export default function HomeScreen() {
           {produtosComEstoqueBaixo.slice(0, 3).map(p => (
             <View key={p.id} className="flex-row justify-between items-center mb-3">
               <Text className="text-xs text-red-200">{p.nome}</Text>
-              <Text className="text-xs font-bold text-red-500">{p.quantidade}/{p.quantidadeMinima}</Text>
+              <Text className="text-xs font-bold text-red-500">{p.quantidade} un.</Text>
             </View>
           ))}
           <TouchableOpacity className="mt-2 self-end">
@@ -112,12 +120,16 @@ export default function HomeScreen() {
     const status = getStatusBadge(item);
     return (
       <View className="flex-row items-center gap-3 py-3 px-6 border-b border-zinc-800/50">
-        <View className="h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800">
-          <Package size={22} color={THEME.dark.mutedForeground} />
+        <View className="h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden">
+          {(item as any).foto ? (
+            <Image source={{ uri: (item as any).foto }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+          ) : (
+            <Package size={22} color={THEME.dark.mutedForeground} />
+          )}
         </View>
         <View className="flex-1 gap-1">
           <Text className="text-sm font-medium text-white">{item.nome}</Text>
-          <Text className="text-xs text-zinc-400">{item.quantidade} {item.unidade}</Text>
+          <Text className="text-xs text-zinc-400">{item.quantidade} un.</Text>
         </View>
         <View className={`px-2.5 py-1 rounded-md ${status.color}`}>
           <Text className={`text-[10px] font-bold uppercase ${status.textColor}`}>{status.label}</Text>

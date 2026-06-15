@@ -7,11 +7,12 @@ import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { produtoSchema, ProdutoFormData } from '@/src/schemas/produtoSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CATEGORIAS_MOCK } from '@/src/data/mockData';
-
+import { useCategorias } from '@/src/hooks/useCategorias';
+import { Alert } from 'react-native';
 export default function NovoProdutoScreen() {
   const router = useRouter();
   const { adicionarProduto } = useProducts();
+  const { categorias, isLoading: loadingCategorias } = useCategorias();
 
   const {
     control,
@@ -21,7 +22,7 @@ export default function NovoProdutoScreen() {
     resolver: zodResolver(produtoSchema) as any,
     defaultValues: {
       nome: '',
-      categoriaId: CATEGORIAS_MOCK[0].id,
+      categoriaId: '',
       quantidade: 0,
       quantidadeMinima: 0,
       preco: 0,
@@ -32,8 +33,12 @@ export default function NovoProdutoScreen() {
   });
 
   const onSubmit = async (data: ProdutoFormData) => {
-    await adicionarProduto(data);
-    router.back();
+    try {
+      await adicionarProduto(data);
+      router.back();
+    } catch (error: any) {
+      Alert.alert('Erro', error.message || 'Erro ao adicionar produto');
+    }
   };
 
   return (
@@ -75,15 +80,19 @@ export default function NovoProdutoScreen() {
             name="categoriaId"
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
-                {CATEGORIAS_MOCK.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() => onChange(cat.id)}
-                    className={`px-4 py-2 rounded-full border ${value === cat.id ? 'bg-brand border-brand' : 'bg-zinc-900 border-zinc-800'}`}
-                  >
-                    <Text className={`text-sm ${value === cat.id ? 'text-white font-bold' : 'text-zinc-400'}`}>{cat.nome}</Text>
-                  </TouchableOpacity>
-                ))}
+                {loadingCategorias ? (
+                  <Text className="text-zinc-400">Carregando categorias...</Text>
+                ) : (
+                  categorias.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() => onChange(cat.id)}
+                      className={`px-4 py-2 rounded-full border ${value === cat.id ? 'bg-brand border-brand' : 'bg-zinc-900 border-zinc-800'}`}
+                    >
+                      <Text className={`text-sm ${value === cat.id ? 'text-white font-bold' : 'text-zinc-400'}`}>{cat.nome}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             )}
           />

@@ -7,13 +7,14 @@ import { ImagePickerField } from '@/src/components/ImagePickerField';
 import { produtoSchema, ProdutoFormData } from '@/src/schemas/produtoSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CATEGORIAS_MOCK } from '@/src/data/mockData';
+import { useCategorias } from '@/src/hooks/useCategorias';
 import { useEffect } from 'react';
 
 export default function EditarProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { produtos, editarProduto, excluirProduto } = useProducts();
+  const { categorias, isLoading: loadingCategorias } = useCategorias();
   
   const produtoAtual = produtos.find(p => p.id === id);
 
@@ -43,12 +44,15 @@ export default function EditarProdutoScreen() {
 
   const onSubmit = async (data: ProdutoFormData) => {
     if (!produtoAtual) return;
-    await editarProduto({
-      ...produtoAtual,
-      ...data,
-      ultimaMovimentacao: new Date().toISOString(), // Optional: update movement date
-    });
-    router.back();
+    try {
+      await editarProduto({
+        ...produtoAtual,
+        ...data,
+      });
+      router.back();
+    } catch (error: any) {
+      Alert.alert('Erro', error.message || 'Erro ao editar produto');
+    }
   };
 
   const handleExcluir = () => {
@@ -62,8 +66,12 @@ export default function EditarProdutoScreen() {
           style: "destructive", 
           onPress: async () => {
             if (id) {
-              await excluirProduto(id);
-              router.back();
+              try {
+                await excluirProduto(id);
+                router.back();
+              } catch (error: any) {
+                Alert.alert('Erro', error.message || 'Erro ao excluir produto');
+              }
             }
           }
         }
@@ -118,15 +126,19 @@ export default function EditarProdutoScreen() {
             name="categoriaId"
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
-                {CATEGORIAS_MOCK.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    onPress={() => onChange(cat.id)}
-                    className={`px-4 py-2 rounded-full border ${value === cat.id ? 'bg-brand border-brand' : 'bg-zinc-900 border-zinc-800'}`}
-                  >
-                    <Text className={`text-sm ${value === cat.id ? 'text-white font-bold' : 'text-zinc-400'}`}>{cat.nome}</Text>
-                  </TouchableOpacity>
-                ))}
+                {loadingCategorias ? (
+                  <Text className="text-zinc-400">Carregando categorias...</Text>
+                ) : (
+                  categorias.map((cat) => (
+                    <TouchableOpacity
+                      key={cat.id}
+                      onPress={() => onChange(cat.id)}
+                      className={`px-4 py-2 rounded-full border ${value === cat.id ? 'bg-brand border-brand' : 'bg-zinc-900 border-zinc-800'}`}
+                    >
+                      <Text className={`text-sm ${value === cat.id ? 'text-white font-bold' : 'text-zinc-400'}`}>{cat.nome}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             )}
           />

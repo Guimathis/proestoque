@@ -7,30 +7,40 @@ import {
   Search
 } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
-import { FlatList, ScrollView, SectionList, StatusBar, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, ScrollView, SectionList, StatusBar, TextInput, TouchableOpacity, View, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
-import {
-  CATEGORIAS_MOCK,
-  Produto
-} from '@/src/data/mockData';
-import { useProducts } from '@/src/contexts/ProductsContext';
+import { useProducts, Produto } from '@/src/contexts/ProductsContext';
+import { useCategorias } from '@/src/hooks/useCategorias';
 import { THEME } from '@/src/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LoadingView } from '@/src/components/LoadingView';
+import { ErrorView } from '@/src/components/ErrorView';
 
 function getStatusBadge(p: Produto) {
   if (p.quantidade === 0) return { label: 'Sem estoque', color: 'bg-red-500/20', textColor: 'text-red-500' };
-  if (p.quantidade < p.quantidadeMinima) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
+  // Default to 10 if not defined, since in the API it might not be present or we can hardcode for UI purposes
+  const qtMin = (p as any).quantidadeMinima || 10;
+  if (p.quantidade < qtMin) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
   return { label: 'Normal', color: 'bg-brand/20', textColor: 'text-brand' };
 }
 
 export default function ProdutosScreen() {
   const router = useRouter();
-  const { produtos } = useProducts();
+  const { produtos, isLoading: isLoadingProdutos, error: errorProdutos, carregarProdutos } = useProducts();
+  const { categorias, isLoading: isLoadingCategorias, error: errorCategorias, refetch: carregarCategorias } = useCategorias();
+  
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isGridView, setIsGridView] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([carregarProdutos(), carregarCategorias()]);
+    setRefreshing(false);
+  };
 
   const filteredProducts = useMemo(() => {
     return produtos.filter(p => {
@@ -42,18 +52,18 @@ export default function ProdutosScreen() {
 
   const groupedProducts = useMemo(() => {
     if (activeCategory !== 'all') {
-      const cat = CATEGORIAS_MOCK.find(c => c.id === activeCategory);
+      const cat = categorias.find(c => c.id === activeCategory);
       return [{
         title: cat ? cat.nome : 'Categoria',
         data: filteredProducts
       }];
     }
 
-    return CATEGORIAS_MOCK.map(cat => ({
+    return categorias.map(cat => ({
       title: cat.nome,
       data: filteredProducts.filter(p => p.categoriaId === cat.id)
     })).filter(g => g.data.length > 0);
-  }, [filteredProducts, activeCategory]);
+  }, [filteredProducts, activeCategory, categorias]);
 
   const renderItem = ({ item }: { item: Produto }) => {
     const status = getStatusBadge(item);
@@ -63,15 +73,15 @@ export default function ProdutosScreen() {
         onPress={() => router.push(`/(tabs)/produtos/${item.id}`)}
       >
         <View className="h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden">
-          {item.foto ? (
-            <Image source={{ uri: item.foto }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+          {(item as any).foto ? (
+            <Image source={{ uri: (item as any).foto }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
             <Package size={22} color={THEME.dark.mutedForeground} />
           )}
         </View>
         <View className="flex-1 gap-1">
           <Text className="text-sm font-medium text-white">{item.nome}</Text>
-          <Text className="text-xs text-zinc-400">{item.quantidade} {item.unidade}</Text>
+          <Text className="text-xs text-zinc-400">{item.quantidade} un.</Text>
         </View>
         <View className={`px-2.5 py-1 rounded-md ${status.color}`}>
           <Text className={`text-[10px] font-bold uppercase ${status.textColor}`}>{status.label}</Text>
@@ -88,14 +98,14 @@ export default function ProdutosScreen() {
         onPress={() => router.push(`/(tabs)/produtos/${item.id}`)}
       >
         <View className="h-12 w-12 items-center justify-center rounded-xl bg-zinc-800 mb-3 overflow-hidden">
-          {item.foto ? (
-            <Image source={{ uri: item.foto }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+          {(item as any).foto ? (
+            <Image source={{ uri: (item as any).foto }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
           ) : (
             <Package size={22} color={THEME.dark.mutedForeground} />
           )}
         </View>
         <Text className="text-sm font-medium text-white mb-1" numberOfLines={1}>{item.nome}</Text>
-        <Text className="text-xs text-zinc-400 mb-3">{item.quantidade} {item.unidade}</Text>
+        <Text className="text-xs text-zinc-400 mb-3">{item.quantidade} un.</Text>
         <View className={`px-2 py-1 rounded-md self-start ${status.color}`}>
           <Text className={`text-[10px] font-bold uppercase ${status.textColor}`}>{status.label}</Text>
         </View>
@@ -116,6 +126,42 @@ export default function ProdutosScreen() {
       <Text className="text-zinc-400 mt-4">Nenhum produto encontrado.</Text>
     </View>
   );
+
+  if (errorProdutos || errorCategorias) {
+    return <ErrorView message={errorProdutos || errorCategorias || 'Erro de rede.'} onRetry={onRefresh} />;
+  }
+
+  // Se for a primeira vez e estiver carregando
+  if ((isLoadingProdutos || isLoadingCategorias) && produtos.length === 0 && categorias.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        {/* Skeletons para categorias */}
+        <View className="px-6 pt-6 mt-4 pb-4">
+          <View className="h-8 w-32 bg-zinc-800 rounded-md mb-4" />
+          <View className="flex-row gap-3">
+             <View className="h-8 w-20 bg-zinc-800 rounded-full" />
+             <View className="h-8 w-24 bg-zinc-800 rounded-full" />
+             <View className="h-8 w-16 bg-zinc-800 rounded-full" />
+          </View>
+        </View>
+        {/* Skeletons para produtos */}
+        <View className="px-6 py-4 flex-row items-center gap-3 border-b border-zinc-800/50">
+          <View className="h-12 w-12 bg-zinc-800 rounded-xl" />
+          <View className="flex-1 gap-2">
+            <View className="h-4 w-3/4 bg-zinc-800 rounded" />
+            <View className="h-3 w-1/4 bg-zinc-800 rounded" />
+          </View>
+        </View>
+        <View className="px-6 py-4 flex-row items-center gap-3 border-b border-zinc-800/50">
+          <View className="h-12 w-12 bg-zinc-800 rounded-xl" />
+          <View className="flex-1 gap-2">
+            <View className="h-4 w-1/2 bg-zinc-800 rounded" />
+            <View className="h-3 w-1/4 bg-zinc-800 rounded" />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -165,7 +211,7 @@ export default function ProdutosScreen() {
           >
             <Text className={`text-sm font-semibold ${activeCategory === 'all' ? 'text-brand-foreground' : 'text-zinc-400'}`}>Todos</Text>
           </TouchableOpacity>
-          {CATEGORIAS_MOCK.map(cat => (
+          {categorias.map(cat => (
             <TouchableOpacity
               key={cat.id}
               onPress={() => setActiveCategory(cat.id)}
@@ -189,6 +235,9 @@ export default function ProdutosScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={EmptyList}
           key="grid-view"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7c3aed" />
+          }
         />
       ) : (
         <SectionList
@@ -201,6 +250,9 @@ export default function ProdutosScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={EmptyList}
           key="list-view"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7c3aed" />
+          }
         />
       )}
 
