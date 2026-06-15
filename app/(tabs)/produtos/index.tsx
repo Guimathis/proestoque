@@ -15,7 +15,8 @@ import { useProducts, Produto } from '@/src/contexts/ProductsContext';
 import { useCategorias } from '@/src/hooks/useCategorias';
 import { THEME } from '@/src/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LoadingView } from '@/src/components/LoadingView';
+import { Skeleton } from '@/src/components/Skeleton';
+import { ProdutoSkeleton } from '@/src/components/ProdutoSkeleton';
 import { ErrorView } from '@/src/components/ErrorView';
 
 function getStatusBadge(p: Produto) {
@@ -135,30 +136,17 @@ export default function ProdutosScreen() {
   if ((isLoadingProdutos || isLoadingCategorias) && produtos.length === 0 && categorias.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-background">
-        {/* Skeletons para categorias */}
+        {/* Skeletons para header + categorias */}
         <View className="px-6 pt-6 mt-4 pb-4">
-          <View className="h-8 w-32 bg-zinc-800 rounded-md mb-4" />
-          <View className="flex-row gap-3">
-             <View className="h-8 w-20 bg-zinc-800 rounded-full" />
-             <View className="h-8 w-24 bg-zinc-800 rounded-full" />
-             <View className="h-8 w-16 bg-zinc-800 rounded-full" />
+          <Skeleton width={120} height={28} borderRadius={6} />
+          <View className="flex-row gap-3 mt-4">
+            <Skeleton width={72} height={32} borderRadius={16} />
+            <Skeleton width={88} height={32} borderRadius={16} />
+            <Skeleton width={64} height={32} borderRadius={16} />
           </View>
         </View>
-        {/* Skeletons para produtos */}
-        <View className="px-6 py-4 flex-row items-center gap-3 border-b border-zinc-800/50">
-          <View className="h-12 w-12 bg-zinc-800 rounded-xl" />
-          <View className="flex-1 gap-2">
-            <View className="h-4 w-3/4 bg-zinc-800 rounded" />
-            <View className="h-3 w-1/4 bg-zinc-800 rounded" />
-          </View>
-        </View>
-        <View className="px-6 py-4 flex-row items-center gap-3 border-b border-zinc-800/50">
-          <View className="h-12 w-12 bg-zinc-800 rounded-xl" />
-          <View className="flex-1 gap-2">
-            <View className="h-4 w-1/2 bg-zinc-800 rounded" />
-            <View className="h-3 w-1/4 bg-zinc-800 rounded" />
-          </View>
-        </View>
+        {/* Skeletons animados para produtos */}
+        <ProdutoSkeleton count={6} />
       </SafeAreaView>
     );
   }

@@ -16,7 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useProducts, Produto } from '@/src/contexts/ProductsContext';
 import { useCategorias } from '@/src/hooks/useCategorias';
-import { LoadingView } from '@/src/components/LoadingView';
+import { Skeleton } from '@/src/components/Skeleton';
+import { ProdutoSkeleton } from '@/src/components/ProdutoSkeleton';
 import { ErrorView } from '@/src/components/ErrorView';
 import { formatarPreco, getProdutosComEstoqueBaixo, getValorTotalEstoque } from '@/src/utils/formatters';
 
@@ -52,7 +53,47 @@ export default function HomeScreen() {
   }
 
   if ((isLoadingProdutos || isLoadingCategorias) && produtos.length === 0 && categorias.length === 0) {
-    return <LoadingView />;
+    return (
+      <SafeAreaView className="flex-1 bg-zinc-950" edges={['top']}>
+        <View className="px-6 pt-2">
+          {/* Header skeleton */}
+          <View className="flex-row items-center gap-2">
+            <Skeleton width={32} height={32} borderRadius={8} />
+            <Skeleton width={120} height={20} borderRadius={4} />
+          </View>
+
+          {/* Greeting skeleton */}
+          <View className="pt-6 pb-6 flex-row justify-between items-center">
+            <View className="gap-2">
+              <Skeleton width={220} height={22} borderRadius={4} />
+              <Skeleton width={140} height={14} borderRadius={4} />
+            </View>
+            <Skeleton width={48} height={48} borderRadius={24} />
+          </View>
+
+          {/* Cards skeleton */}
+          <View className="flex-row flex-wrap gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <View key={i} className="flex-1 min-w-[45%] rounded-2xl p-4 gap-3 border border-zinc-800 bg-zinc-900">
+                <Skeleton width={20} height={20} borderRadius={4} />
+                <View className="gap-1 mt-2">
+                  <Skeleton width={60} height={22} borderRadius={4} />
+                  <Skeleton width={50} height={12} borderRadius={4} />
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Section title skeleton */}
+          <View className="mt-8 mb-2">
+            <Skeleton width={150} height={16} borderRadius={4} />
+          </View>
+        </View>
+
+        {/* Product list skeleton */}
+        <ProdutoSkeleton count={5} />
+      </SafeAreaView>
+    );
   }
 
   const produtosComEstoqueBaixo = getProdutosComEstoqueBaixo(produtos);
