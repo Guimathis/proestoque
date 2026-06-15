@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer, useCallback } from 'react';
 import { api } from '../services/api';
+import { sendLowStockNotification } from '../services/notifications';
 
 export type Produto = {
   id: string;
@@ -84,7 +85,17 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'LOAD_START' });
     try {
       const response = await api.get('/produtos');
-      dispatch({ type: 'LOAD_SUCCESS', payload: response.data });
+      const produtosCarregados: Produto[] = response.data;
+      dispatch({ type: 'LOAD_SUCCESS', payload: produtosCarregados });
+
+      // Verificar estoque baixo e enviar notificação
+      const produtosBaixos = produtosCarregados.filter((p) => {
+        const min = p.quantidadeMinima || 10;
+        return p.quantidade < min;
+      });
+      if (produtosBaixos.length > 0) {
+        sendLowStockNotification(produtosBaixos);
+      }
     } catch (error: any) {
       console.error('Failed to load products', error);
       dispatch({ type: 'LOAD_ERROR', payload: error.message || 'Erro ao carregar produtos' });

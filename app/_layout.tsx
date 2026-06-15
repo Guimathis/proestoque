@@ -10,6 +10,7 @@ import { NAV_THEME } from '@/src/constants/theme';
 import { AuthProvider, useAuth } from '@/src/contexts/AuthContext';
 import { ProductsProvider } from '@/src/contexts/ProductsContext';
 import SplashScreen from '@/src/components/SplashScreen';
+import { requestNotificationPermission } from '@/src/services/notifications';
 import { useEffect } from 'react';
 
 export const unstable_settings = {
@@ -30,6 +31,11 @@ function NavigationGuard() {
       router.replace('/(auth)/login');
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)');
+    }
+
+    // Solicitar permissão de notificações quando o usuário está autenticado
+    if (isAuthenticated) {
+      requestNotificationPermission();
     }
   }, [isAuthenticated, isLoading, segments]);
 
