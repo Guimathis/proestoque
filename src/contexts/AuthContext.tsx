@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../services/api';
 
 type User = {
+  id: string;
   nome: string;
   email: string;
 };
@@ -11,7 +13,8 @@ type AuthContextType = {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: (email: string, senha: string) => Promise<void>;
+  registrar: (nome: string, email: string, senha: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -24,44 +27,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const loadSession = async () => {
-      const startTime = Date.now();
       try {
         const storedToken = await AsyncStorage.getItem('@Proestoque:token');
-        const storedUser = await AsyncStorage.getItem('@Proestoque:user');
+        const storedRefreshToken = await AsyncStorage.getItem('@Proestoque:refreshToken');
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+        if (storedToken && storedRefreshToken) {
+          try {
+            const response = await api.get('/auth/me');
+            setUser(response.data);
+            setToken(storedToken);
+          } catch (error) {
+            await AsyncStorage.removeItem('@Proestoque:token');
+            await AsyncStorage.removeItem('@Proestoque:refreshToken');
+            await AsyncStorage.removeItem('@Proestoque:user');
+            setUser(null);
+            setToken(null);
+          }
         }
       } catch (error) {
         console.error('Failed to load session', error);
       } finally {
-        const elapsed = Date.now() - startTime;
-        const remaining = Math.max(0, 1500 - elapsed);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, remaining);
+        setIsLoading(false);
       }
     };
 
     loadSession();
   }, []);
 
-  const login = async () => {
+  const login = async (email: string, senha: string) => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      const mockedToken = 'mock-jwt-token-123';
-      const mockedUser = { nome: 'João Silva', email: 'joao@email.com' };
-      
-      await AsyncStorage.setItem('@Proestoque:token', mockedToken);
-      await AsyncStorage.setItem('@Proestoque:user', JSON.stringify(mockedUser));
-      
-      setToken(mockedToken);
-      setUser(mockedUser);
+      const response = await api.post('/auth/login', { email, senha });
+      const { usuario, token: newToken, refreshToken } = response.data;
+
+      await AsyncStorage.setItem('@Proestoque:token', newToken);
+      await AsyncStorage.setItem('@Proestoque:refreshToken', refreshToken);
+      await AsyncStorage.setItem('@Proestoque:user', JSON.stringify(usuario));
+
+      setToken(newToken);
+      setUser(usuario);
     } catch (error) {
       console.error('Failed to login', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const registrar = async (nome: string, email: string, senha: string) => {
+    setIsLoading(true);
+    try {
+      await api.post('/auth/registro', { nome, email, senha });
+      // Após registrar, fazemos o login automaticamente
+      await login(email, senha);
+    } catch (error) {
+      console.error('Failed to register', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await AsyncStorage.removeItem('@Proestoque:token');
+      await AsyncStorage.removeItem('@Proestoque:refreshToken');
       await AsyncStorage.removeItem('@Proestoque:user');
       setToken(null);
       setUser(null);
@@ -82,7 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, isAuthenticated: !!token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, isAuthenticated: !!token, login, registrar, logout }}>
       {children}
     </AuthContext.Provider>
   );

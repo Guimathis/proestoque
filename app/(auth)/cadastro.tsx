@@ -13,12 +13,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/src/contexts/AuthContext';
+
 // ─── Constantes de estilo reutilizadas na tela ────────────────────────────────
 const INPUT_CONTAINER = 'border-zinc-700 bg-zinc-900';
 const INPUT_LABEL = 'text-zinc-300';
 const INPUT_TEXT = 'text-white';
 
 export default function CadastroScreen() {
+  const { registrar } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,11 +38,14 @@ export default function CadastroScreen() {
     return true;
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!validatePasswords()) return;
-    setLoading(true);
-    // TODO: implementar cadastro
-    setTimeout(() => setLoading(false), 2000);
+    try {
+      await registrar(name, email, password);
+    } catch (error: any) {
+      const mensagem = error.response?.data?.erro || 'Erro ao registrar. Tente novamente.';
+      alert(mensagem);
+    }
   }
 
   return (

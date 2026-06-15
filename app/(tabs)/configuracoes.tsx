@@ -1,29 +1,15 @@
-import LogoProEstoque from '@/src/components/LogoProEstoque';
 import { Text } from '@/src/components/ui/text';
 import { Bell, ChevronRight, CircleHelp, LogOut, Palette } from 'lucide-react-native';
 import React from 'react';
-import { Alert, Pressable, SafeAreaView, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ConfiguracoesScreen() {
   const { user, logout } = useAuth();
 
   function handleLogout() {
-    Alert.alert(
-      'Sair da conta',
-      'Tem certeza que deseja sair?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Sair',
-          style: 'destructive',
-          onPress: () => logout(),
-        },
-      ]
-    );
+    logout();
   }
 
   const menuItems = [
@@ -35,7 +21,7 @@ export default function ConfiguracoesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-zinc-950">
       <View className="flex-1 px-6 pt-8 gap-8">
-        
+
         {/* Header */}
         <View className="flex-row items-center gap-4">
           <Text className="text-2xl font-bold text-white">Configurações</Text>
@@ -73,6 +59,7 @@ export default function ConfiguracoesScreen() {
           className="flex-row items-center justify-center gap-2 h-14 rounded-2xl bg-red-950/40 border border-red-900/50 mb-6"
           hitSlop={8}
         >
+          <LogOut size={20} color="#ef4444" />
           <Text className="text-base font-bold text-red-500">Sair da conta</Text>
         </Pressable>
 

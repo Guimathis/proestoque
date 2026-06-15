@@ -19,8 +19,13 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
 
-  function handleLogin() {
-    login();
+  async function handleLogin() {
+    try {
+      await login(email, password);
+    } catch (error: any) {
+      const mensagem = error.response?.data?.erro || 'Erro ao fazer login. Verifique as credenciais.';
+      alert(mensagem); // Importe Alert de react-native se preferir Alert.alert
+    }
   }
 
   return (
