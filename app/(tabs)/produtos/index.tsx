@@ -23,7 +23,7 @@ function getStatusBadge(p: Produto) {
   if (p.quantidade === 0) return { label: 'Sem estoque', color: 'bg-red-500/20', textColor: 'text-red-500' };
   // Default to 10 if not defined, since in the API it might not be present or we can hardcode for UI purposes
   const qtMin = (p as any).quantidadeMinima || 10;
-  if (p.quantidade < qtMin) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
+  if (p.quantidade <= qtMin) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
   return { label: 'Normal', color: 'bg-brand/20', textColor: 'text-brand' };
 }
 
@@ -31,7 +31,7 @@ export default function ProdutosScreen() {
   const router = useRouter();
   const { produtos, isLoading: isLoadingProdutos, error: errorProdutos, carregarProdutos } = useProducts();
   const { categorias, isLoading: isLoadingCategorias, error: errorCategorias, refetch: carregarCategorias } = useCategorias();
-  
+
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isGridView, setIsGridView] = useState(false);
@@ -69,7 +69,7 @@ export default function ProdutosScreen() {
   const renderItem = ({ item }: { item: Produto }) => {
     const status = getStatusBadge(item);
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         className="flex-row items-center gap-3 py-3 px-6 border-b border-zinc-800/50"
         onPress={() => router.push(`/(tabs)/produtos/${item.id}`)}
       >
@@ -94,7 +94,7 @@ export default function ProdutosScreen() {
   const renderGridItem = ({ item }: { item: Produto }) => {
     const status = getStatusBadge(item);
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-4 m-2 max-w-[46%]"
         onPress={() => router.push(`/(tabs)/produtos/${item.id}`)}
       >
@@ -165,7 +165,7 @@ export default function ProdutosScreen() {
           >
             {isGridView ? <ListIcon size={20} color="white" /> : <LayoutGrid size={20} color="white" />}
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             className="h-12 w-12 bg-brand rounded-full items-center justify-center"
             onPress={() => router.push('/(tabs)/produtos/novo')}
           >

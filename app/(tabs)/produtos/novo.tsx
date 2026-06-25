@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StatusBar, Alert, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { useProducts } from '@/src/contexts/ProductsContext';
@@ -44,7 +44,13 @@ export default function NovoProdutoScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['bottom', 'left', 'right']}>
       <StatusBar barStyle="light-content" />
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         
         <Controller
           control={control}
@@ -203,7 +209,9 @@ export default function NovoProdutoScreen() {
             {isSubmitting ? 'Salvando...' : 'Cadastrar produto'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

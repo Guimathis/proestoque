@@ -7,10 +7,14 @@ import { Lock, Mail, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Keyboard,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
-  View,
-  Alert
+  ScrollView,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -56,112 +60,122 @@ export default function CadastroScreen() {
     <SafeAreaView className="flex-1 bg-zinc-950">
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View className="flex-1 px-6 py-8 gap-8">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="flex-1 px-6 py-8 gap-8">
 
-          {/* Topo: Logo + Título */}
-          <View className="items-center gap-4 pt-10">
-            <LogoProEstoque size="md" />
-            <Text
-              variant="h1"
-              className="text-white text-3xl font-extrabold"
-            >
-              Criar conta
-            </Text>
-          </View>
+              {/* Topo: Logo + Título */}
+              <View className="items-center gap-4 pt-10">
+                <LogoProEstoque size="md" />
+                <Text
+                  variant="h1"
+                  className="text-white text-3xl font-extrabold"
+                >
+                  Criar conta
+                </Text>
+              </View>
 
-          {/* Formulário */}
-          <View className="gap-5">
-            <LoginInput
-              label="Nome completo"
-              icon={User}
-              placeholder="João Silva"
-              value={name}
-              onChangeText={setName}
-              textContentType="name"
-              returnKeyType="next"
-              containerClassName={INPUT_CONTAINER}
-              labelClassName={INPUT_LABEL}
-              className={INPUT_TEXT}
-            />
+              {/* Formulário */}
+              <View className="gap-5">
+                <LoginInput
+                  label="Nome completo"
+                  icon={User}
+                  placeholder="João Silva"
+                  value={name}
+                  onChangeText={setName}
+                  textContentType="name"
+                  returnKeyType="next"
+                  containerClassName={INPUT_CONTAINER}
+                  labelClassName={INPUT_LABEL}
+                  className={INPUT_TEXT}
+                />
 
-            <LoginInput
-              label="E-mail"
-              icon={Mail}
-              placeholder="joao@email.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              returnKeyType="next"
-              containerClassName={INPUT_CONTAINER}
-              labelClassName={INPUT_LABEL}
-              className={INPUT_TEXT}
-            />
+                <LoginInput
+                  label="E-mail"
+                  icon={Mail}
+                  placeholder="joao@email.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                  returnKeyType="next"
+                  containerClassName={INPUT_CONTAINER}
+                  labelClassName={INPUT_LABEL}
+                  className={INPUT_TEXT}
+                />
 
-            <LoginInput
-              label="Senha"
-              icon={Lock}
-              placeholder="••••••"
-              value={password}
-              onChangeText={(v) => {
-                setPassword(v);
-                if (passwordError) setPasswordError('');
-              }}
-              isPassword
-              textContentType="newPassword"
-              returnKeyType="next"
-              containerClassName={INPUT_CONTAINER}
-              labelClassName={INPUT_LABEL}
-              className={INPUT_TEXT}
-            />
+                <LoginInput
+                  label="Senha"
+                  icon={Lock}
+                  placeholder="••••••"
+                  value={password}
+                  onChangeText={(v) => {
+                    setPassword(v);
+                    if (passwordError) setPasswordError('');
+                  }}
+                  isPassword
+                  textContentType="newPassword"
+                  returnKeyType="next"
+                  containerClassName={INPUT_CONTAINER}
+                  labelClassName={INPUT_LABEL}
+                  className={INPUT_TEXT}
+                />
 
-            <LoginInput
-              label="Confirmar senha"
-              icon={Lock}
-              placeholder="••••"
-              value={confirmPassword}
-              onChangeText={(v) => {
-                setConfirmPassword(v);
-                if (passwordError) setPasswordError('');
-              }}
-              isPassword
-              textContentType="newPassword"
-              returnKeyType="done"
-              onSubmitEditing={handleRegister}
-              error={passwordError}
-              containerClassName={INPUT_CONTAINER}
-              labelClassName={INPUT_LABEL}
-              className={INPUT_TEXT}
-            />
-          </View>
+                <LoginInput
+                  label="Confirmar senha"
+                  icon={Lock}
+                  placeholder="••••"
+                  value={confirmPassword}
+                  onChangeText={(v) => {
+                    setConfirmPassword(v);
+                    if (passwordError) setPasswordError('');
+                  }}
+                  isPassword
+                  textContentType="newPassword"
+                  returnKeyType="done"
+                  onSubmitEditing={handleRegister}
+                  error={passwordError}
+                  containerClassName={INPUT_CONTAINER}
+                  labelClassName={INPUT_LABEL}
+                  className={INPUT_TEXT}
+                />
+              </View>
 
-          {/* Botão + Rodapé */}
-          <View className="gap-5">
-            <Button
-              variant="brand"
-              onPress={handleRegister}
-              disabled={loading}
-              className="h-14 w-full rounded-full"
-            >
-              <Text className="text-base font-bold text-brand-foreground">
-                {loading ? <ActivityIndicator color="#fff" /> : 'Criar Conta'}
-              </Text>
-            </Button>
+              {/* Botão + Rodapé */}
+              <View className="gap-5">
+                <Button
+                  variant="brand"
+                  onPress={handleRegister}
+                  disabled={loading}
+                  className="h-14 w-full rounded-full"
+                >
+                  <Text className="text-base font-bold text-brand-foreground">
+                    {loading ? <ActivityIndicator color="#fff" /> : 'Criar Conta'}
+                  </Text>
+                </Button>
 
-            <Pressable
-              onPress={() => router.back()}
-              className="items-center"
-              hitSlop={8}
-            >
-              <Text className="text-sm text-zinc-400">
-                Já tenho conta
-              </Text>
-            </Pressable>
-          </View>
+                <Pressable
+                  onPress={() => router.back()}
+                  className="items-center"
+                  hitSlop={8}
+                >
+                  <Text className="text-sm text-zinc-400">
+                    Já tenho conta
+                  </Text>
+                </Pressable>
+              </View>
 
-        </View>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

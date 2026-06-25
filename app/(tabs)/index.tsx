@@ -30,8 +30,7 @@ function getGreeting() {
 
 function getStatusBadge(p: Produto) {
   if (p.quantidade === 0) return { label: 'Sem estoque', color: 'bg-red-500/20', textColor: 'text-red-500' };
-  const qtMin = (p as any).quantidadeMinima || 10;
-  if (p.quantidade < qtMin) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
+  if (p.quantidade <= p.quantidadeMinima) return { label: 'Baixo', color: 'bg-amber-500/20', textColor: 'text-amber-500' };
   return { label: 'Normal', color: 'bg-brand/20', textColor: 'text-brand' };
 }
 

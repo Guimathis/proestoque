@@ -8,10 +8,7 @@ export function formatarPreco(valor: number): string {
 }
 
 export function getProdutosComEstoqueBaixo(produtos: Produto[]): Produto[] {
-  return produtos.filter((p) => {
-    const min = (p as any).quantidadeMinima || 10; // Default to 10 for warning
-    return p.quantidade < min;
-  });
+  return produtos.filter((p) => p.quantidade <= p.quantidadeMinima);
 }
 
 export function getValorTotalEstoque(produtos: Produto[]): number {

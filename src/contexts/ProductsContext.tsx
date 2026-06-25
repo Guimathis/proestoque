@@ -91,15 +91,12 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'LOAD_SUCCESS', payload: produtosCarregados });
 
       // Verificar estoque baixo e enviar notificação
-      const produtosBaixos = produtosCarregados.filter((p) => {
-        const min = p.quantidadeMinima || 10;
-        return p.quantidade < min;
-      });
+      const produtosBaixos = produtosCarregados.filter((p) => p.quantidade <= p.quantidadeMinima);
       if (produtosBaixos.length > 0) {
         sendLowStockNotification(produtosBaixos);
       }
     } catch (error: any) {
-      console.error('Failed to load products', error);
+      // console.error('Failed to load products', error);
       dispatch({ type: 'LOAD_ERROR', payload: error.message || 'Erro ao carregar produtos' });
     }
   }, []);
@@ -115,7 +112,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       const response = await api.post('/produtos', produtoData);
       dispatch({ type: 'ADD', payload: response.data });
     } catch (error) {
-      console.error('Failed to add product', error);
+      // console.error('Failed to add product', error);
       throw error;
     }
   };
@@ -125,7 +122,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       const response = await api.put(`/produtos/${produto.id}`, produto);
       dispatch({ type: 'UPDATE', payload: response.data });
     } catch (error) {
-      console.error('Failed to update product', error);
+      // console.error('Failed to update product', error);
       throw error;
     }
   };
@@ -135,7 +132,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       await api.delete(`/produtos/${id}`);
       dispatch({ type: 'DELETE', payload: id });
     } catch (error) {
-      console.error('Failed to delete product', error);
+      // console.error('Failed to delete product', error);
       throw error;
     }
   };

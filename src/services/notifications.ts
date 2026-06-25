@@ -4,7 +4,6 @@ import { Platform } from 'react-native';
 // Configuração de como a notificação aparece quando o app está em primeiro plano
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,

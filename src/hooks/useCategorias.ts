@@ -20,7 +20,7 @@ export function useCategorias() {
       const response = await api.get('/categorias');
       setCategorias(response.data);
     } catch (err: any) {
-      console.error('Failed to load categorias', err);
+      // console.error('Failed to load categorias', err);
       setError(err.message || 'Erro ao carregar categorias');
     } finally {
       setIsLoading(false);
